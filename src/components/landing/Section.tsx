@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import type { SectionProps, SportCard, AthleteCard } from "@/types"
+import type { SectionProps, SportCard, AthleteCard, MomentCard } from "@/types"
 
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/3c04807e-961f-4570-953e-f2409e527828/files/068b9e53-d71e-4cf8-82d4-d125a79b7414.jpg"
 
@@ -45,7 +45,23 @@ function AthleteCardItem({ card, index, isActive }: { card: AthleteCard; index: 
   )
 }
 
-export default function Section({ id, title, subtitle, content, isActive, showButton, buttonText, sports, athletes }: SectionProps) {
+function MomentCardItem({ card, index, isActive }: { card: MomentCard; index: number; isActive: boolean }) {
+  return (
+    <motion.div
+      className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-3 hover:bg-white/10 transition-colors"
+      initial={{ opacity: 0, y: 30 }}
+      animate={isActive ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: 0.1 + index * 0.08 }}
+    >
+      <div className="text-3xl">{card.emoji}</div>
+      <div className="text-[#FF4D00] text-xs font-bold tracking-widest uppercase">{card.year}</div>
+      <h3 className="text-white font-bold text-base leading-snug">{card.title}</h3>
+      <p className="text-neutral-400 text-xs leading-relaxed">{card.description}</p>
+    </motion.div>
+  )
+}
+
+export default function Section({ id, title, subtitle, content, isActive, showButton, buttonText, sports, athletes, moments }: SectionProps) {
   const isHero = id === 'hero'
   return (
     <section id={id} className="relative h-screen w-full snap-start flex flex-col justify-center p-8 md:p-16 lg:p-24">
@@ -100,6 +116,13 @@ export default function Section({ id, title, subtitle, content, isActive, showBu
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-10">
           {athletes.map((card, i) => (
             <AthleteCardItem key={card.name} card={card} index={i} isActive={isActive} />
+          ))}
+        </div>
+      )}
+      {moments && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-10">
+          {moments.map((card, i) => (
+            <MomentCardItem key={card.title} card={card} index={i} isActive={isActive} />
           ))}
         </div>
       )}
