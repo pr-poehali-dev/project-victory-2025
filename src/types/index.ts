@@ -1,5 +1,12 @@
 import type { ReactNode } from "react"
 
+export interface SportCard {
+  emoji: string
+  name: string
+  description: string
+  fact: string
+}
+
 export interface Section {
   id: string
   title: string
@@ -7,6 +14,7 @@ export interface Section {
   content?: string
   showButton?: boolean
   buttonText?: string
+  sports?: SportCard[]
 }
 
 export interface SectionProps extends Section {
