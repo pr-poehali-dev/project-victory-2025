@@ -21,6 +21,13 @@ export interface MomentCard {
   description: string
 }
 
+export interface QuizQuestion {
+  question: string
+  options: string[]
+  correct: number
+  explanation: string
+}
+
 export interface Section {
   id: string
   title: string
@@ -31,6 +38,7 @@ export interface Section {
   sports?: SportCard[]
   athletes?: AthleteCard[]
   moments?: MomentCard[]
+  quiz?: QuizQuestion[]
 }
 
 export interface SectionProps extends Section {

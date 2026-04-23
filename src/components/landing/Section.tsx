@@ -1,6 +1,7 @@
 import { motion } from "framer-motion"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import type { SectionProps, SportCard, AthleteCard, MomentCard } from "@/types"
+import type { SectionProps, SportCard, AthleteCard, MomentCard, QuizQuestion } from "@/types"
 
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/3c04807e-961f-4570-953e-f2409e527828/files/068b9e53-d71e-4cf8-82d4-d125a79b7414.jpg"
 
@@ -45,6 +46,114 @@ function AthleteCardItem({ card, index, isActive }: { card: AthleteCard; index: 
   )
 }
 
+function QuizBlock({ questions, isActive }: { questions: QuizQuestion[]; isActive: boolean }) {
+  const [current, setCurrent] = useState(0)
+  const [selected, setSelected] = useState<number | null>(null)
+  const [score, setScore] = useState(0)
+  const [finished, setFinished] = useState(false)
+
+  const q = questions[current]
+
+  const handleAnswer = (i: number) => {
+    if (selected !== null) return
+    setSelected(i)
+    if (i === q.correct) setScore(s => s + 1)
+  }
+
+  const handleNext = () => {
+    if (current + 1 < questions.length) {
+      setCurrent(c => c + 1)
+      setSelected(null)
+    } else {
+      setFinished(true)
+    }
+  }
+
+  const handleRestart = () => {
+    setCurrent(0)
+    setSelected(null)
+    setScore(0)
+    setFinished(false)
+  }
+
+  return (
+    <motion.div
+      className="mt-10 max-w-2xl"
+      initial={{ opacity: 0, y: 30 }}
+      animate={isActive ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: 0.2 }}
+    >
+      {finished ? (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 flex flex-col gap-4 items-start">
+          <div className="text-5xl">{score === questions.length ? '🏆' : score >= questions.length / 2 ? '🥈' : '💪'}</div>
+          <h3 className="text-white font-bold text-2xl">Результат: {score} из {questions.length}</h3>
+          <p className="text-neutral-400 text-sm">
+            {score === questions.length
+              ? 'Великолепно! Ты настоящий знаток спорта!'
+              : score >= questions.length / 2
+              ? 'Хороший результат! Есть куда расти.'
+              : 'Изучи наш сайт и попробуй снова — всё получится!'}
+          </p>
+          <Button
+            onClick={handleRestart}
+            variant="outline"
+            className="mt-2 text-[#FF4D00] bg-transparent border-[#FF4D00] hover:bg-[#FF4D00] hover:text-black transition-colors"
+          >
+            Пройти ещё раз
+          </Button>
+        </div>
+      ) : (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-500 text-xs">Вопрос {current + 1} / {questions.length}</span>
+            <span className="text-[#FF4D00] text-xs font-bold">Счёт: {score}</span>
+          </div>
+          <h3 className="text-white font-bold text-xl leading-snug">{q.question}</h3>
+          <div className="grid grid-cols-1 gap-3">
+            {q.options.map((opt, i) => {
+              const isCorrect = i === q.correct
+              const isWrong = selected === i && i !== q.correct
+              const reveal = selected !== null
+
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleAnswer(i)}
+                  className={[
+                    'text-left px-5 py-3 rounded-xl border text-sm transition-all',
+                    reveal && isCorrect ? 'border-green-500 bg-green-500/10 text-green-400' :
+                    isWrong ? 'border-red-500 bg-red-500/10 text-red-400' :
+                    selected === null ? 'border-white/10 text-neutral-300 hover:border-white/30 hover:bg-white/5' :
+                    'border-white/5 text-neutral-600'
+                  ].join(' ')}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+          </div>
+          {selected !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col gap-4"
+            >
+              <p className="text-neutral-400 text-sm italic">{q.explanation}</p>
+              <Button
+                onClick={handleNext}
+                variant="outline"
+                className="self-start text-[#FF4D00] bg-transparent border-[#FF4D00] hover:bg-[#FF4D00] hover:text-black transition-colors"
+              >
+                {current + 1 < questions.length ? 'Следующий вопрос →' : 'Посмотреть результат'}
+              </Button>
+            </motion.div>
+          )}
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
 function MomentCardItem({ card, index, isActive }: { card: MomentCard; index: number; isActive: boolean }) {
   return (
     <motion.div
@@ -61,7 +170,7 @@ function MomentCardItem({ card, index, isActive }: { card: MomentCard; index: nu
   )
 }
 
-export default function Section({ id, title, subtitle, content, isActive, showButton, buttonText, sports, athletes, moments }: SectionProps) {
+export default function Section({ id, title, subtitle, content, isActive, showButton, buttonText, sports, athletes, moments, quiz }: SectionProps) {
   const isHero = id === 'hero'
   return (
     <section id={id} className="relative h-screen w-full snap-start flex flex-col justify-center p-8 md:p-16 lg:p-24">
@@ -126,6 +235,7 @@ export default function Section({ id, title, subtitle, content, isActive, showBu
           ))}
         </div>
       )}
+      {quiz && <QuizBlock questions={quiz} isActive={isActive} />}
       {showButton && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
